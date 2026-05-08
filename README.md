@@ -1,4 +1,3 @@
-```markdown
 # 🎨 Embed Generator
 
 Um editor visual de embeds para Discord, inspirado no [Message.style](https://message.style). Crie, edite e envie mensagens embed personalizadas para seus servidores do Discord através de webhooks.
@@ -97,7 +96,6 @@ embed-generator/
 - Animações suaves
 
 ## 🐛 Rate Limit
-
 O Discord impõe limites de taxa para prevenir abusos. Se você receber o erro:
 ```
 Recursos de serviço estão sendo limitados pela taxa.
@@ -110,7 +108,7 @@ O site irá:
 
 ## 📝 Exemplo de JSON Gerado
 
-```json
+```
 {
   "username": "Embed Generator",
   "content": "Hello World!",
