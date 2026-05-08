@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Embed Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Barra Superior -->
+    <header class="top-bar">
+        <div class="top-left">
+            <div class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <rect width="24" height="24" rx="6" fill="#5865F2"/>
+                    <path d="M6 8h12M6 12h12M6 16h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span class="logo-text">Embed Generator</span>
+            </div>
+            <span class="version-tag">v2.0</span>
+        </div>
+        
+        <div class="top-center">
+            <div class="webhook-bar">
+                <div class="input-icon">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M8 2L10 6L14 6.5L11 9.5L12 13.5L8 11.5L4 13.5L5 9.5L2 6.5L6 6L8 2Z" fill="#5865F2" stroke="#5865F2" stroke-width="1"/>
+                    </svg>
+                    <input type="url" id="webhookUrl" placeholder="Webhook URL" class="top-input">
+                </div>
+                <div class="input-icon">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M3 4h10M3 8h10M3 12h7" stroke="#949ba4" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    <input type="text" id="messageId" placeholder="Message ID (edit)" class="top-input small-input">
+                </div>
+            </div>
+        </div>
+        
+        <div class="top-right">
+            <button onclick="copyPayload()" class="top-btn secondary-btn">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <rect x="4" y="4" width="10" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M2 12V3a1 1 0 011-1h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                Copy JSON
+            </button>
+            <button onclick="clearAll()" class="top-btn danger-btn">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M12 4v9a1 1 0 01-1 1H5a1 1 0 01-1-1V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Clear
+            </button>
+            <button onclick="sendWebhook()" class="top-btn send-btn" id="sendBtn">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 2L14 8L2 14L5 8L2 2Z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/>
+                    <path d="M5 8H14" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                Send Message
+            </button>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <div class="main-container">
+        <!-- Painel Esquerdo - Editor -->
+        <div class="editor-sidebar">
+            <!-- Seção: Perfil do Webhook -->
+            <div class="editor-section">
+                <div class="section-title">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <circle cx="7" cy="5" r="3" stroke="#949ba4" stroke-width="1.5"/>
+                        <path d="M2 13c0-2.8 2.2-5 5-5s5 2.2 5 5" stroke="#949ba4" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    Webhook Profile
+                </div>
+                <div class="input-row">
+                    <div class="modern-input">
+                        <input type="text" id="webhookUsername" placeholder=" " class="floating-input">
+                        <label>Username</label>
+                    </div>
+                    <div class="modern-input">
+                        <input type="url" id="webhookAvatar" placeholder=" " class="floating-input">
+                        <label>Avatar URL</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção: Mensagem -->
+            <div class="editor-section">
+                <div class="section-title">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M2 4h10M2 7h10M2 10h6" stroke="#949ba4" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    Content
+                    <span class="badge" id="charCount">0/2000</span>
+                </div>
+                <textarea id="messageContent" maxlength="2000" placeholder="Type your message here...&#10;Supports **markdown** and <:emoji:>" class="modern-textarea" rows="4"></textarea>
+                <div class="flags-row">
+                    <label class="modern-checkbox">
+                        <input type="checkbox" id="flagTTS" onchange="updatePreview()">
+                        <span class="checkmark"></span>
+                        TTS
+                    </label>
+                    <label class="modern-checkbox">
+                        <input type="checkbox" id="flagSuppressEmbeds" onchange="updatePreview()">
+                        <span class="checkmark"></span>
+                        Suppress Embeds
+                    </label>
+                </div>
+            </div>
+
+            <!-- Seção: Embeds -->
+            <div class="editor-section">
+                <div class="section-title">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <rect x="2" y="2" width="10" height="10" rx="2" stroke="#949ba4" stroke-width="1.5"/>
+                        <path d="M2 5h10" stroke="#949ba4" stroke-width="1.5"/>
+                    </svg>
+                    Embeds
+                    <span class="badge" id="embedCounter">0/10</span>
+                </div>
+                <div id="embedsContainer"></div>
+                <button onclick="addEmbed()" class="add-btn" id="addEmbedBtn">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M7 3v8M3 7h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    Add Embed
+                </button>
+                <div id="embedLimitWarning" class="limit-warning" style="display: none;">
+                    ⚠️ Maximum of 10 embeds reached
+                </div>
+            </div>
+
+            <!-- Seção: Componentes -->
+            <div class="editor-section">
+                <div class="section-title">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <rect x="2" y="2" width="10" height="3" rx="1" stroke="#949ba4" stroke-width="1.5"/>
+                        <rect x="2" y="9" width="10" height="3" rx="1" stroke="#949ba4" stroke-width="1.5"/>
+                    </svg>
+                    Components
+                </div>
+                <div id="componentsContainer"></div>
+                <button onclick="addComponentRow()" class="add-btn">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M7 3v8M3 7h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    Add Action Row
+                </button>
+            </div>
+        </div>
+
+        <!-- Painel Direito - Preview -->
+        <div class="preview-area">
+            <div class="preview-toolbar">
+                <span class="preview-label">Live Preview</span>
+                <div class="preview-toggle">
+                    <button onclick="changePreviewMode('desktop')" class="toggle-btn active" data-mode="desktop">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                            <rect x="1" y="1" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M5 13h4M7 10v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                    <button onclick="changePreviewMode('mobile')" class="toggle-btn" data-mode="mobile">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                            <rect x="3" y="1" width="8" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M6 11h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="preview-scroll" id="previewContent">
+                <div class="preview-empty">
+                    <div class="empty-icon">
+                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                            <circle cx="32" cy="32" r="30" stroke="#3f4147" stroke-width="2" stroke-dasharray="4 4"/>
+                            <path d="M24 28h16M24 36h10" stroke="#3f4147" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <p class="empty-text">Your message preview</p>
+                    <p class="empty-sub">Start editing to see how it looks on Discord</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Embed Template -->
+    <template id="embedTemplate">
+        <div class="embed-card">
+            <div class="embed-card-header" onclick="toggleEmbedCard(this)">
+                <div class="embed-card-title">
+                    <span class="embed-dot" style="background:#5865F2"></span>
+                    <span class="embed-label">Embed #1</span>
+                </div>
+                <div class="embed-card-actions">
+                    <button onclick="event.stopPropagation(); duplicateEmbed(this)" class="card-btn" title="Duplicate">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                            <rect x="4" y="4" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M2 10V2h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                    <button onclick="event.stopPropagation(); removeEmbed(this)" class="card-btn danger-btn" title="Remove">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                            <path d="M3 4h8M5 4V3h4v1M11 4v7a1 1 0 01-1 1H4a1 1 0 01-1-1V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <svg class="collapse-icon" width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="embed-card-body">
+                <div class="form-grid">
+                    <div class="modern-input">
+                        <input type="text" class="embed-author-name floating-input" placeholder=" ">
+                        <label>Author Name</label>
+                    </div>
+                    <div class="modern-input">
+                        <input type="url" class="embed-author-icon floating-input" placeholder=" ">
+                        <label>Author Icon URL</label>
+                    </div>
+                </div>
+                <div class="modern-input mt-2">
+                    <input type="url" class="embed-author-url floating-input" placeholder=" ">
+                    <label>Author URL</label>
+                </div>
+                <div class="modern-input mt-2">
+                    <input type="text" class="embed-title floating-input" placeholder=" ">
+                    <label>Title</label>
+                </div>
+                <div class="modern-input mt-2">
+                    <input type="url" class="embed-title-url floating-input" placeholder=" ">
+                    <label>Title URL</label>
+                </div>
+                <div class="modern-input mt-2">
+                    <textarea class="embed-description modern-textarea" rows="3" placeholder="Embed description with **markdown** support"></textarea>
+                </div>
+                <div class="form-grid mt-2">
+                    <div class="modern-input">
+                        <input type="color" class="embed-color" value="#5865F2">
+                        <input type="text" class="embed-color-hex" value="#5865F2" placeholder="#HEX">
+                    </div>
+                    <div class="modern-input">
+                        <label class="modern-checkbox mt-3">
+                            <input type="checkbox" class="embed-timestamp" onchange="updatePreview()">
+                            <span class="checkmark"></span>
+                            Show Timestamp
+                        </label>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <label class="field-label">Fields</label>
+                    <div class="fields-container"></div>
+                    <button onclick="addField(this)" class="add-field-btn">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                            <path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                        Add Field
+                    </button>
+                </div>
+                <div class="form-grid mt-3">
+                    <div class="modern-input">
+                        <input type="url" class="embed-image floating-input" placeholder=" ">
+                        <label>Image URL</label>
+                    </div>
+                    <div class="modern-input">
+                        <input type="url" class="embed-thumbnail floating-input" placeholder=" ">
+                        <label>Thumbnail URL</label>
+                    </div>
+                </div>
+                <div class="form-grid mt-2">
+                    <div class="modern-input">
+                        <input type="text" class="embed-footer-text floating-input" placeholder=" ">
+                        <label>Footer Text</label>
+                    </div>
+                    <div class="modern-input">
+                        <input type="url" class="embed-footer-icon floating-input" placeholder=" ">
+                        <label>Footer Icon URL</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Field Template -->
+    <template id="fieldTemplate">
+        <div class="field-row">
+            <div class="field-inputs">
+                <input type="text" class="field-name" placeholder="Field name">
+                <input type="text" class="field-value" placeholder="Field value">
+            </div>
+            <div class="field-controls">
+                <label class="modern-checkbox small">
+                    <input type="checkbox" class="field-inline" onchange="updatePreview()">
+                    <span class="checkmark"></span>
+                    Inline
+                </label>
+                <button onclick="removeField(this)" class="icon-remove">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Component Row Template -->
+    <template id="componentRowTemplate">
+        <div class="component-card">
+            <div class="component-card-header">
+                <span>Action Row</span>
+                <button onclick="removeComponentRow(this)" class="icon-remove">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="buttons-container"></div>
+            <button onclick="addButton(this)" class="add-field-btn">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                Add Button
+            </button>
+        </div>
+    </template>
+
+    <!-- Button Template -->
+    <template id="buttonTemplate">
+        <div class="button-card">
+            <div class="button-card-header">
+                <select class="button-style-select">
+                    <option value="1">🔵 Primary</option>
+                    <option value="2">⚫ Secondary</option>
+                    <option value="3">🟢 Success</option>
+                    <option value="4">🔴 Danger</option>
+                    <option value="5">🔗 Link</option>
+                </select>
+                <button onclick="removeButton(this)" class="icon-remove">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <input type="text" class="button-label" placeholder="Button label *">
+            <input type="text" class="button-custom-id" placeholder="custom_id">
+            <input type="url" class="button-url" placeholder="URL (for link buttons)" style="display:none;">
+            <input type="text" class="button-emoji" placeholder="Emoji (optional)">
+        </div>
+    </template>
+</body>
+<script src="script.js"></script>
+</html>
