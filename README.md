@@ -165,4 +165,3 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 ---
 
 Feito com ❤️ de [AkiraDv](https://github.com/akiradv) para a comunidade Discord
-```
